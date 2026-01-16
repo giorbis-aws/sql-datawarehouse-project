@@ -1,0 +1,22 @@
+USE master;
+
+-- Drop and recreate the 'Datawarehouse' database
+
+Begin
+  ALTER DATABASE Datawarehouse SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+  DROP DATABASE Datawarehouse;
+END;
+
+GO
+
+-- Create the 'Datawarehouse' database
+
+CREATE DATABASE Datawarehouse;
+GO
+USE Datawarehouse;
+GO
+create Schema bronze;
+GO
+create Schema silver;
+GO
+create Schema gold;
