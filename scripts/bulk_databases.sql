@@ -1,5 +1,13 @@
 /*
+==========================================================================================
+Bulk information into tables
+==========================================================================================
+Script Purpose:
+  The script bulk the data into bronze schema tables..
 
+!Warning:
+  Running this script will drop all data in the tables and fill with the new info.
+  All the old data in the tables will be permanently deleted. Proceed with caution and ensure you have proper backups before running this script.
 */
 
 TRUNCATE TABLE bronze.crm_cust_info;
