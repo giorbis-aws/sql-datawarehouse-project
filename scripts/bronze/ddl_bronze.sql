@@ -1,152 +1,77 @@
-/*
-==========================================================================================
-Bulk information into tables
-==========================================================================================
-Script Purpose:
-  The script bulk the data into bronze schema tables..
+IF OBJECT_ID('bronze.crm_cust_info', 'U') IS NOT NULL
+    DROP TABLE bronze.crm_cust_info;
 
-!Warning:
-  Running this script will drop all data in the tables and fill with the new info.
-  All the old data in the tables will be permanently deleted. Proceed with caution and ensure you have proper backups before running this script.
-*/
+CREATE TABLE bronze.crm_cust_info(
+    cst_id INT,
+    cst_key NVARCHAR(50),
+    cst_firtsname NVARCHAR(50),
+    cst_lastname NVARCHAR(50),
+    cst_material_status NVARCHAR(50),
+    cst_gndr NVARCHAR(50),
+    cst_create_date DATE
+);
 
-CREATE or ALTER PROCEDURE bronze.load_bronze AS
-BEGIN
-    DECLARE @start_time DATETIME2, @end_time DATETIME2, @total_time_start DATETIME2, @total_time_end DATETIME2
-    BEGIN TRY
-        PRINT '==========================================================';
-        PRINT 'Loading Bronze Layer';
-        PRINT '==========================================================';
-        PRINT '----------------------------------------------------------';
-        PRINT 'Loading CRM Tables';
-        PRINT '----------------------------------------------------------';
+GO
 
-        SET @start_time = GETDATE();
-         SET @total_time_start = GETDATE();
-        PRINT '>> Truncating Table: bronze.crm_cust_info';
+IF OBJECT_ID('bronze.crm_prd_info', 'U') IS NOT NULL
+    DROP TABLE bronze.crm_prd_info;
 
-        TRUNCATE TABLE bronze.crm_cust_info;
+CREATE TABLE bronze.crm_prd_info(
+    prd_id INT,
+    prd_key NVARCHAR(50),
+    prd_nm NVARCHAR(50),
+    prd_cost INT,
+    prd_line NVARCHAR(50),
+    prd_start_dt DATETIME not null,
+    prd_end_dt DATETIME
+);
 
-        PRINT '>> Inserting data into: bronze.crm_cust_info';
+GO
 
-        BULK INSERT bronze.crm_cust_info
-        from '/var/opt/mssql/data/source_crm/cust_info.csv'
-        WITH (
-            FIRSTROW = 2,
-            FIELDTERMINATOR = ',',
-            ROWTERMINATOR = '\n',
-            TABLOCK
-        );   
-        SET @end_time = GETDATE();
-        PRINT 'Total time: ' + CAST(DATEDIFF(second, @start_time, @end_time) AS NVARCHAR) + ' seconds';
+IF OBJECT_ID('bronze.crm_sales_details', 'U') IS NOT NULL
+    DROP TABLE bronze.crm_sales_details;
 
-        PRINT '>> Truncating Table: bronze.crm_sales_details';
+CREATE TABLE bronze.crm_sales_details(
+    sls_ord_num NVARCHAR(50),
+    sls_prd_key NVARCHAR(50),
+    sls_cust_id INT,
+    sls_order_dt INT,
+    sls_ship_dt INT,
+    sls_due_dt INT,
+    sls_sales INT,
+    sls_quantity INT,
+    sls_price INT
+);
 
-        SET @start_time = GETDATE();
-        TRUNCATE TABLE bronze.crm_sales_details;
+GO
 
-        PRINT '>> Inserting data into: bronze.crm_sales_details';
+IF OBJECT_ID('bronze.erp_cust_az12', 'U') IS NOT NULL
+    DROP TABLE bronze.erp_cust_az12;
 
-        BULK INSERT bronze.crm_sales_details
-        from '/var/opt/mssql/data/source_crm/sales_details.csv'
-        WITH (
-            FIRSTROW = 2,
-            FIELDTERMINATOR = ',',
-            ROWTERMINATOR = '\n',
-            TABLOCK
-        );    
+CREATE TABLE bronze.erp_cust_az12(
+    cid NVARCHAR(50),
+    bdate DATE,
+    gen NVARCHAR(50)
+); 
 
-        SET @end_time = GETDATE();
-        PRINT 'Total time: ' + CAST(DATEDIFF(second, @start_time, @end_time) AS NVARCHAR) + ' seconds';
+GO
 
-        PRINT '>> Truncating Table: bronze.crm_prd_info';
+IF OBJECT_ID('bronze.erp_loc_a101', 'U') IS NOT NULL
+    DROP TABLE bronze.erp_loc_a101;
 
-        SET @start_time = GETDATE();
-        TRUNCATE TABLE bronze.crm_prd_info;
+CREATE TABLE bronze.erp_loc_a101(
+    cid NVARCHAR(50),
+    cntry NVARCHAR(52)
+); 
 
-        PRINT '>> Inserting data into: bronze.crm_prd_info';
+GO
 
-        BULK INSERT bronze.crm_prd_info
-        from '/var/opt/mssql/data/source_crm/prd_info.csv'
-        WITH (
-            FIRSTROW = 2,
-            FIELDTERMINATOR = ',',
-            ROWTERMINATOR = '\n',
-            TABLOCK
-        ); 
+IF OBJECT_ID('bronze.erp_px_cat_g1v2', 'U') IS NOT NULL
+    DROP TABLE bronze.erp_px_cat_g1v2;
 
-        SET @end_time = GETDATE();
-        PRINT 'Total time: ' + CAST(DATEDIFF(second, @start_time, @end_time) AS NVARCHAR) + ' seconds';
-
-        PRINT '----------------------------------------------------------';
-        PRINT 'Loading ERP Tables';
-        PRINT '----------------------------------------------------------';
-
-        PRINT '>> Truncating Table: bronze.erp_cust_az12';
-
-        SET @start_time = GETDATE();
-        TRUNCATE TABLE bronze.erp_cust_az12;
-
-        PRINT '>> Inserting data into: bronze.erp_cust_az12';
-
-        BULK INSERT bronze.erp_cust_az12
-        from '/var/opt/mssql/data/source_erp/cust_az12.csv'
-        WITH (
-            FIRSTROW = 2,
-            FIELDTERMINATOR = ',',
-            ROWTERMINATOR = '\n',
-            TABLOCK
-        );
-
-        SET @end_time = GETDATE();
-        PRINT 'Total time: ' + CAST(DATEDIFF(second, @start_time, @end_time) AS NVARCHAR) + ' seconds';
-
-        PRINT '>> Truncating Table: bronze.erp_loc_a101';
-
-        TRUNCATE TABLE bronze.erp_loc_a101;
-
-        SET @start_time = GETDATE();
-        PRINT '>> Inserting data into: bronze.erp_loc_a101';
-
-        BULK INSERT bronze.erp_loc_a101
-        from '/var/opt/mssql/data/source_erp/loc_a101.csv'
-        WITH (
-            FIRSTROW = 2,
-            FIELDTERMINATOR = ',',
-            ROWTERMINATOR = '\n',
-            TABLOCK
-        );
-
-        SET @end_time = GETDATE();
-        PRINT 'Total time: ' + CAST(DATEDIFF(second, @start_time, @end_time) AS NVARCHAR) + ' seconds';
-
-        PRINT '>> Truncating Table: bronze.erp_px_cat_g1v2';
-
-        TRUNCATE TABLE bronze.erp_px_cat_g1v2;
-
-        SET @start_time = GETDATE();
-        PRINT '>> Inserting data into: bronze.erp_px_cat_g1v2';
-
-        BULK INSERT bronze.erp_px_cat_g1v2
-        from '/var/opt/mssql/data/source_erp/px_cat_g1v2.csv'
-        WITH (
-            FIRSTROW = 2,
-            FIELDTERMINATOR = ',',
-            ROWTERMINATOR = '\n',
-            TABLOCK
-        );
-
-        SET @end_time = GETDATE();
-        SET @total_time_end = GETDATE();
-        PRINT 'Total time: ' + CAST(DATEDIFF(second, @start_time, @end_time) AS NVARCHAR) + ' seconds';
-        PRINT 'Completion time: ' + CAST(GETDATE() AS NVARCHAR);
-    END TRY
-    BEGIN CATCH
-        PRINT '===================================================';
-        PRINT 'Error ocurred during loading bronze layer';
-        PRINT 'Error Message: ' + ERROR_MESSAGE();
-        PRINT 'Error Message: ' + CAST (ERROR_NUMBER() AS NVARCHAR);
-        PRINT 'Error Message: ' + CAST (ERROR_STATE() AS NVARCHAR);
-        PRINT '===================================================';
-    END CATCH
-END
+CREATE TABLE bronze.erp_px_cat_g1v2(
+    id NVARCHAR(50),
+    cat NVARCHAR(52),
+    subcat NVARCHAR(50),
+    maintenance NVARCHAR(50)
+);
